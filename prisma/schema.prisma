@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// TODO(migration): Add initial migration after validating enum values/index strategy.
+// TODO(seed): Extend seed data with representative stores, platform accounts, and rules.
+
+enum PlatformSessionStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum JobRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum ReplyStatus {
+  DRAFT
+  SENT
+  FAILED
+}
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  stores            Store[]
+  pushSubscriptions PushSubscription[]
+  jobRuns           JobRun[]
+  auditLogs         AuditLog[]
+}
+
+model Store {
+  id               String            @id @default(cuid())
+  userId           String
+  name             String
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platformAccounts PlatformAccount[]
+  reviews          Review[]
+  replyRules       ReplyRule[]
+  replies          Reply[]
+  jobRuns          JobRun[]
+}
+
+model PlatformAccount {
+  id              String            @id @default(cuid())
+  storeId         String
+  platform        String
+  externalId      String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  store           Store             @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  sessions        PlatformSession[]
+
+  @@unique([storeId, platform])
+}
+
+model PlatformSession {
+  id                String                @id @default(cuid())
+  platformAccountId String
+  status            PlatformSessionStatus @default(ACTIVE)
+  accessToken       String
+  refreshToken      String?
+  expiresAt         DateTime?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  platformAccount   PlatformAccount       @relation(fields: [platformAccountId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id          String    @id @default(cuid())
+  storeId     String
+  rating      Int
+  content     String
+  authorName  String?
+  reviewedAt  DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  replies     Reply[]
+}
+
+model ReplyRule {
+  id          String    @id @default(cuid())
+  storeId     String
+  name        String
+  condition   String
+  template    String
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  replies     Reply[]
+}
+
+model Reply {
+  id          String      @id @default(cuid())
+  storeId     String
+  reviewId    String
+  replyRuleId String?
+  status      ReplyStatus @default(DRAFT)
+  content     String
+  postedAt    DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  store       Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  review      Review      @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  replyRule   ReplyRule?  @relation(fields: [replyRuleId], references: [id], onDelete: SetNull)
+  jobRunItems JobRunItem[]
+}
+
+model JobRun {
+  id          String       @id @default(cuid())
+  userId      String
+  storeId     String
+  status      JobRunStatus @default(PENDING)
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store       Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  items       JobRunItem[]
+}
+
+model JobRunItem {
+  id          String       @id @default(cuid())
+  jobRunId    String
+  replyId     String?
+  status      JobRunStatus @default(PENDING)
+  message     String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  jobRun      JobRun       @relation(fields: [jobRunId], references: [id], onDelete: Cascade)
+  reply       Reply?       @relation(fields: [replyId], references: [id], onDelete: SetNull)
+}
+
+model PushSubscription {
+  id           String    @id @default(cuid())
+  userId       String
+  endpoint     String    @unique
+  p256dh       String
+  auth         String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id           String    @id @default(cuid())
+  userId       String
+  action       String
+  targetType   String
+  targetId     String
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
