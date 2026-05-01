@@ -1,5 +1,5 @@
-import { containsBannedWord, renderTemplate } from './template-utils.js';
-import { ReplyRuleConfig, ReplyTemplateVariables, RuleTemplate } from './types.js';
+import { containsBannedWord, renderTemplate } from './template-utils';
+import { ReplyRuleConfig, ReplyTemplateVariables, RuleTemplate } from './types';
 
 export type ReplyRuleInput = ReplyTemplateVariables;
 

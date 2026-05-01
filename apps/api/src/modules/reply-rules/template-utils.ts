@@ -1,4 +1,4 @@
-import { ReplyTemplateVariables } from './types.js';
+import { ReplyTemplateVariables } from './types';
 
 const TOKEN_REGEX = /{{\s*(customerName|storeName|rating|reviewText)\s*}}/g;
 

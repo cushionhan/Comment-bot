@@ -1,4 +1,4 @@
-import { PushSubscriptionPayload, PushSubscriptionRepository } from './types.js';
+import { PushSubscriptionPayload, PushSubscriptionRepository } from './types';
 
 export class InMemoryPushSubscriptionRepository implements PushSubscriptionRepository {
   private readonly store = new Map<string, PushSubscriptionPayload[]>();
