@@ -1,0 +1,9 @@
+export interface Logger {
+  info(message: string, meta?: Record<string, unknown>): void;
+  error(message: string, meta?: Record<string, unknown>): void;
+}
+
+export const logger: Logger = {
+  info: (message, meta) => console.log("[INFO]", message, meta ?? {}),
+  error: (message, meta) => console.error("[ERROR]", message, meta ?? {}),
+};
