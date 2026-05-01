@@ -1,5 +1,5 @@
-import { PushSendService } from '../modules/push/push-send-service';
-import { PushSubscriptionRepository } from '../modules/push/types';
+import { PushSendService } from '../modules/push/push-send-service.js';
+import { PushSubscriptionRepository } from '../modules/push/types.js';
 
 type Request = {
   params?: Record<string, string>;
