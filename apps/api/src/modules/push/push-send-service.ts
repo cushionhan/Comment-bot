@@ -1,4 +1,4 @@
-import { PushNotificationPayload, PushSubscriptionRepository } from './types';
+import { PushNotificationPayload, PushSubscriptionRepository } from './types.js';
 
 type VapidConfig = {
   publicKey: string;

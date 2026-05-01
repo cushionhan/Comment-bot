@@ -7,6 +7,8 @@ const adapter = new MockPlatformClient(new Set(["expired-account"]));
 const dailyJobService = new DailyJobService(adapter);
 
 export async function registerRoutes(app: FastifyInstance): Promise<void> {
+  app.get("/", async () => ({ service: "comment-bot-api", ok: true }));
+
   app.get("/health", async () => ({ ok: true }));
 
   app.get("/reviews", async () => ({ items: Array.from(db.reviews) }));
